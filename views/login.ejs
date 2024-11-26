@@ -11,5 +11,8 @@
         </div>
         <button type="submit">Login</button>
     </form>
+    <% if (typeof error !== "undefined") { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
     <p><a href="/">Go back</a></p>
 <%- include('partials/footer') %>

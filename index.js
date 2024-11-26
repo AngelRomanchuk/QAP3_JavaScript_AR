@@ -45,8 +45,23 @@ app.get("/login", (request, response) => {
 });
 
 // POST /login - Allows a user to login
-app.post("/login", (request, response) => {
+app.post("/login", async (request, response) => {
+    const { email, password } = request.body;
+    const user = USERS.find((u) => u.email === email);
 
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+        // Render login page with an error message
+        return response.render("login", { error: "Invalid email or password" });
+    }
+
+    // Store user details in session
+    request.session.user = {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+    };
+
+    response.redirect("/landing");
 });
 
 // GET /signup - Render signup form
