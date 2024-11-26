@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: "Landing" }) %>
+    <h1>Welcome, <%= user.username %></h1>
+    <% if (user.role === "admin") { %>
+        <h2>All Users:</h2>
+        <ul>
+            <% users.forEach((u) => { %>
+                <li><%= u.username %> (<%= u.email %>)</li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>This is your dashboard.</p>
+    <% } %>
+    <a href="/logout">Logout</a>
+<%- include('partials/footer') %>

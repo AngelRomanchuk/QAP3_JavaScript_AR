@@ -70,9 +70,44 @@ app.get("/signup", (request, response) => {
 });
 
 // POST /signup - Allows a user to signup
-app.post("/signup", (request, response) => {
-    
+app.post("/signup", async (request, response) => {
+    const { username, email, password } = request.body;
+
+    // Check if the email is already registered
+    const existingUser = USERS.find((u) => u.email === email);
+    if (existingUser) {
+        console.log("Attempt to register with existing email:", email);
+        return response.render("signup", { error: "Email is already registered" });
+    }
+
+    // Hash the password and add the new user to USERS
+    try {
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+        const newUser = {
+            id: USERS.length + 1,
+            username,
+            email,
+            password: hashedPassword,
+            role: "user", // Default role
+        };
+        USERS.push(newUser);
+
+        console.log("New user added:", newUser);
+        response.redirect("/login");
+    } catch (error) {
+        console.error("Error hashing password:", error);
+        response.render("signup", { error: "Something went wrong. Please try again." });
+    }
 });
+
+// GET /logout - Render logout form
+app.get("/logout", (request, response) => {
+    request.session.destroy(() => {
+        response.redirect("/");
+    });
+});
+
+
 
 // GET / - Render index page or redirect to landing if logged in
 app.get("/", (request, response) => {
@@ -84,7 +119,20 @@ app.get("/", (request, response) => {
 
 // GET /landing - Shows a welcome page for users, shows the names of all users if an admin
 app.get("/landing", (request, response) => {
-    
+    if (!request.session.user) {
+        return response.redirect("/login");
+    }
+
+    if (request.session.user.role === "admin") {
+        // Show all users for admin
+        return response.render("landing", {
+            user: request.session.user,
+            users: USERS,
+        });
+    }
+
+    // Show dashboard for regular users
+    response.render("landing", { user: request.session.user });
 });
 
 // Start server
